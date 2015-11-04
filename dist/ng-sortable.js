@@ -297,14 +297,17 @@
                 this.sourceInfo.sortableScope.options.clone = false;
               }
 
+              var sourceItem;
               // If clone is not set to true, remove the item from the source model.
               if (this.sourceInfo.sortableScope.options.clone === false) {
-                this.sourceInfo.sortableScope.removeItem(this.sourceInfo.index);
+                sourceItem = this.sourceInfo.sortableScope.removeItem(this.sourceInfo.index);
+              } else {
+                sourceItem = this.source.itemData();
               }
 
               // If the dragged item is not already there, insert the item. This avoids ng-repeat dupes error
-              if(this.parent.modelValue.indexOf(this.source.modelValue) < 0) {
-                this.parent.insertItem(this.index, this.source.modelValue);
+              if(this.parent.modelValue.indexOf(sourceItem) < 0) {
+                this.parent.insertItem(this.index, sourceItem);
               }
 
             }
