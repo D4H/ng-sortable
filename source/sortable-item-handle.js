@@ -270,10 +270,6 @@
            * @param targetScope the target scope
            */
           function insertBefore(targetElement, targetScope) {
-            // Ensure the placeholder is visible in the target (unless it's a table row)
-            if (placeHolder.css('display') !== 'table-row') {
-              placeHolder.css('display', 'block');
-            }
             if (!targetScope.sortableScope.options.clone) {
               targetElement[0].parentNode.insertBefore(placeHolder[0], targetElement[0]);
               dragItemInfo.moveTo(targetScope.sortableScope, targetScope.index());
@@ -287,10 +283,6 @@
            * @param targetScope the target scope
            */
           function insertAfter(targetElement, targetScope) {
-            // Ensure the placeholder is visible in the target (unless it's a table row)
-            if (placeHolder.css('display') !== 'table-row') {
-              placeHolder.css('display', 'block');
-            }
             if (!targetScope.sortableScope.options.clone) {
               targetElement.after(placeHolder);
               dragItemInfo.moveTo(targetScope.sortableScope, targetScope.index() + 1);
