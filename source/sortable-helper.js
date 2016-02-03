@@ -222,15 +222,34 @@
             index: item.index(),
             parent: item.sortableScope,
             source: item,
+            targetElement: null,
+            targetElementOffset: null,
             sourceInfo: {
               index: item.index(),
               itemScope: item.itemScope,
               sortableScope: item.sortableScope
             },
-            moveTo: function (parent, index) { // Move the item to a new position
+            canMove: function(itemPosition, targetElement, targetElementOffset) {
+              // return true if targetElement has been changed since last call
+              if (this.targetElement !== targetElement) {
+                this.targetElement = targetElement;
+                this.targetElementOffset = targetElementOffset;
+                return true;
+              }
+              // return true if mouse is moving in the last moving direction of targetElement
+              if (itemPosition.dirX * (targetElementOffset.left - this.targetElementOffset.left) > 0 ||
+                  itemPosition.dirY * (targetElementOffset.top - this.targetElementOffset.top) > 0) {
+                this.targetElementOffset = targetElementOffset;
+                return true;
+              }
+              // return false otherwise
+              return false;
+            },
+            moveTo: function (parent, index) {
+              // move the item to a new position
               this.parent = parent;
-              //If source Item is in the same Parent.
-              if (this.isSameParent() && this.source.index() < index) { // and target after
+              // if the source item is in the same parent, the target index is after the source index and we're not cloning
+              if (this.isSameParent() && this.source.index() < index && !this.sourceInfo.sortableScope.cloning) {
                 index = index - 1;
               }
               this.index = index;
@@ -251,25 +270,18 @@
               };
             },
             apply: function () {
+              if (!this.sourceInfo.sortableScope.cloning) {
+                // if not cloning, remove the item from the source model.
+                this.sourceInfo.sortableScope.removeItem(this.sourceInfo.index);
 
-              // If clone is not set, set it to false
-              if (typeof (this.sourceInfo.sortableScope.options.clone) === 'undefined') {
-                this.sourceInfo.sortableScope.options.clone = false;
+                // if the dragged item is not already there, insert the item. This avoids ng-repeat dupes error
+                if (this.parent.options.allowDuplicates || this.parent.modelValue.indexOf(this.source.modelValue) < 0) {
+                  this.parent.insertItem(this.index, this.source.modelValue);
+                }
+              } else if (!this.parent.options.clone) { // prevent drop inside sortables that specify options.clone = true
+                // clone the model value as well
+                this.parent.insertItem(this.index, angular.copy(this.source.modelValue));
               }
-
-              var sourceItem;
-              // If clone is not set to true, remove the item from the source model.
-              if (this.sourceInfo.sortableScope.options.clone === false) {
-                sourceItem = this.sourceInfo.sortableScope.removeItem(this.sourceInfo.index);
-              } else {
-                sourceItem = this.source.itemData();
-              }
-
-              // If the dragged item is not already there, insert the item. This avoids ng-repeat dupes error
-              if(this.parent.modelValue.indexOf(sourceItem) < 0) {
-                this.parent.insertItem(this.index, sourceItem);
-              }
-
             }
           };
         },
